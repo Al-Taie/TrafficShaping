@@ -48,7 +48,7 @@ class FirewallManager:
 
     @staticmethod
     def clear_url(url):
-        pattern = r"https?://([A-Za-z0-9\.]+)/?"
+        pattern = r"(?:https?://)?([A-Za-z0-9\.]+)/?"
         regex = re.compile(pattern)
         matches = regex.search(url)
         result = matches.group(1)
