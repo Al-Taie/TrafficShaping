@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import re
+import subprocess
 import time
 from datetime import datetime
 from threading import Thread
@@ -16,24 +17,33 @@ class FirewallManager:
 
     def runtime(self):
         while True:
+            changed = False
             current_time = datetime.now().time()
-            for entry in self.entries:
+            for entry in self.entries.copy():
                 if entry.start_time <= current_time <= entry.end_time:
                     # Block URL using iptables if it's not already blocked
-                    self.block(url=entry.url, start_time=entry.start_time, end_time=entry.end_time)
-                else:
+                    if not entry.is_blocked:
+                        changed = True
+                        self.block(url=entry.url, start_time=entry.start_time, end_time=entry.end_time)
+                elif entry.is_blocked and current_time >= entry.end_time:
+                    changed = True
                     # Unblock URL using iptables if it's blocked but not in the allowed time range
                     self.unblock(url=entry.url)
+            if changed:
+                self.restart_network_service()
             time.sleep(30)  # Check every 30 seconds
 
     def block(self, url, start_time, end_time):
+        current_time = datetime.now().time()
         url = self.clear_url(url)
-        with open(HOSTS_PATH, 'r+') as hosts_file:
-            entry = f'{LOCALHOST} {url}\n'
-            if entry not in hosts_file.readlines():
-                hosts_file.write(entry)
+        can_block = current_time >= start_time
+        if can_block:
+            with open(HOSTS_PATH, 'r+') as hosts_file:
+                entry = f'{LOCALHOST} {url}\n'
+                if entry not in hosts_file.readlines():
+                    hosts_file.write(entry)
 
-        self.entries.append(URLEntry(url=url, start_time=start_time, end_time=end_time))
+        self.entries.append(URLEntry(url=url, start_time=start_time, end_time=end_time, is_blocked=can_block))
 
     def unblock(self, url):
         url = self.clear_url(url)
@@ -60,9 +70,15 @@ class FirewallManager:
         result = matches.group(1) if matches else None
         return result
 
+    @staticmethod
+    def restart_network_service():
+        process = lambda: subprocess.run(['sudo', 'systemctl', 'restart', 'networking'])
+        Thread(target=process, daemon=True).start()
+
 
 class URLEntry:
-    def __init__(self, url, start_time, end_time):
+    def __init__(self, url, start_time, end_time, is_blocked):
         self.url = url
+        self.is_blocked = is_blocked
         self.start_time = start_time
         self.end_time = end_time
