@@ -65,7 +65,7 @@ class FirewallManager:
 
     @staticmethod
     def clear_url(url):
-        regex = re.compile(r"(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+\.[a-zA-Z]{2,})")
+        regex = re.compile(r"(?:https?://)?((?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,})")
         matches = regex.search(url)
         result = matches.group(1) if matches else None
         return result
