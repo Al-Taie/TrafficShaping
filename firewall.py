@@ -24,7 +24,7 @@ class FirewallManager:
                 else:
                     # Unblock URL using iptables if it's blocked but not in the allowed time range
                     self.unblock(url=entry.url)
-            time.sleep(60)  # Check every minute
+            time.sleep(30)  # Check every 30 seconds
 
     def block(self, url, start_time, end_time):
         url = self.clear_url(url)
