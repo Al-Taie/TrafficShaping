@@ -21,7 +21,7 @@ class TrafficShapingApp(AppUI):
         self.url_field.textChanged.connect(self.validation)
 
     def validation(self, value):
-        is_valid = bool(self.firewall.clear_url(value))
+        is_valid = self.firewall.validate_url(value)
         self.block_btn.setEnabled(is_valid)
         self.unblock_btn.setEnabled(is_valid)
 

@@ -50,9 +50,12 @@ class FirewallManager:
         self.entries = [entry for entry in self.entries if entry.url != url]
 
     @staticmethod
+    def validate_url(url):
+        return bool(FirewallManager.clear_url(url))
+
+    @staticmethod
     def clear_url(url):
-        pattern = r"(?:https?://)?([A-Za-z0-9\.]+\.[A-Za-z]{2,})/?"
-        regex = re.compile(pattern)
+        regex = re.compile(r"(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+\.[a-zA-Z]{2,})")
         matches = regex.search(url)
         result = matches.group(1) if matches else None
         return result
