@@ -29,9 +29,9 @@ class FirewallManager:
                     changed = True
                     # Unblock URL using iptables if it's blocked but not in the allowed time range
                     self.unblock(url=entry.url)
+
             if changed:
-                self.restart_network_service()
-            time.sleep(30)  # Check every 30 seconds
+                time.sleep(30)  # Check every 30 seconds
 
     def block(self, url, start_time, end_time):
         current_time = datetime.now().time()
@@ -69,11 +69,6 @@ class FirewallManager:
         matches = regex.search(url)
         result = matches.group(1) if matches else None
         return result
-
-    @staticmethod
-    def restart_network_service():
-        process = lambda: subprocess.run(['sudo', 'systemctl', 'restart', 'networking'])
-        Thread(target=process, daemon=True).start()
 
 
 class URLEntry:
