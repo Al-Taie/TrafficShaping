@@ -18,6 +18,12 @@ class TrafficShapingApp(AppUI):
     def handle_connection(self):
         self.block_btn.clicked.connect(self.block_url)
         self.unblock_btn.clicked.connect(self.unblock_url)
+        self.url_field.textChanged.connect(self.validation)
+
+    def validation(self, value):
+        is_valid = bool(self.firewall.clear_url(value))
+        self.block_btn.setEnabled(is_valid)
+        self.unblock_btn.setEnabled(is_valid)
 
     def block_url(self):
         url = self.url_field.text()
@@ -38,7 +44,11 @@ def main():
     app = QApplication(sys.argv)
     window = TrafficShapingApp()
     window.show()
-    apply_stylesheet(app, theme='theme.xml', invert_secondary=False)
+    apply_stylesheet(
+        app=app,
+        theme='theme.xml',
+        css_file="theme.css",
+        invert_secondary=False)
     sys.exit(app.exec())
 
 

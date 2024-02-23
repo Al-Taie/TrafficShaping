@@ -4,6 +4,9 @@ import time
 from datetime import datetime
 from threading import Thread
 
+HOSTS_PATH = '/etc/hosts'
+LOCALHOST = "127.0.0.1"
+
 
 class FirewallManager:
     entries = []
@@ -25,8 +28,8 @@ class FirewallManager:
 
     def block(self, url, start_time, end_time):
         url = self.clear_url(url)
-        with open('/etc/hosts', 'r+') as hosts_file:
-            entry = f'127.0.0.1 {url}\n'
+        with open(HOSTS_PATH, 'r+') as hosts_file:
+            entry = f'{LOCALHOST} {url}\n'
             if entry not in hosts_file.readlines():
                 hosts_file.write(entry)
 
@@ -35,23 +38,23 @@ class FirewallManager:
     def unblock(self, url):
         url = self.clear_url(url)
         # Read the content of the hosts file
-        with open('/etc/hosts', 'r') as hosts_file:
+        with open(HOSTS_PATH, 'r') as hosts_file:
             lines = hosts_file.readlines()
 
         # Write back the content of the hosts file excluding the line with the blocked URL
-        with open('/etc/hosts', 'w') as hosts_file:
+        with open(HOSTS_PATH, 'w') as hosts_file:
             for line in lines:
-                if not line.startswith(f'127.0.0.1 {url}'):
+                if not line.startswith(f'{LOCALHOST} {url}'):
                     hosts_file.write(line)
 
         self.entries = [entry for entry in self.entries if entry.url != url]
 
     @staticmethod
     def clear_url(url):
-        pattern = r"(?:https?://)?([A-Za-z0-9\.]+)/?"
+        pattern = r"(?:https?://)?([A-Za-z0-9\.]+\.[A-Za-z]{2,})/?"
         regex = re.compile(pattern)
         matches = regex.search(url)
-        result = matches.group(1)
+        result = matches.group(1) if matches else None
         return result
 
 
